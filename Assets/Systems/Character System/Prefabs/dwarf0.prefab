@@ -42,9 +42,10 @@ GameObject:
   - component: {fileID: 8948606379884088126}
   - component: {fileID: 7925087185071924377}
   - component: {fileID: 5666945319617321628}
+  - component: {fileID: 4838765970617188625}
   - component: {fileID: 148690579034706054}
   - component: {fileID: 8390139516471939309}
-  - component: {fileID: 4838765970617188625}
+  - component: {fileID: 4459207277087364213}
   m_Layer: 6
   m_Name: dwarf0
   m_TagString: Untagged
@@ -147,34 +148,6 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 4
---- !u!114 &148690579034706054
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7919422103709745633}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 638be102afbaccc40a180419c2a2e708, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &8390139516471939309
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7919422103709745633}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 285bc14308a4771459a232bb80e14f42, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  moveSpeed: 5
-  jumpForce: 8
-  groundCheckDistance: 0.15
-  rb: {fileID: 0}
 --- !u!61 &4838765970617188625
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -220,3 +193,50 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.6, y: 1.575}
   m_EdgeRadius: 0
+--- !u!114 &148690579034706054
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7919422103709745633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 638be102afbaccc40a180419c2a2e708, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &8390139516471939309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7919422103709745633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 285bc14308a4771459a232bb80e14f42, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 5
+  jumpForce: 8
+  groundCheckDistance: 0.15
+  rb: {fileID: 0}
+--- !u!114 &4459207277087364213
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7919422103709745633}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6abc44d3967f88439a215028ba2ab0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MainDirection: {x: 1, y: 0}
+  sightPoint: {fileID: 7892795001089073949}
+  RayDensity: 0.25
+  RayLength: 5
+  TargetTag: Tilemap
+  FOV: 90
+  followCursor: 0
