@@ -10,14 +10,6 @@ namespace Systems.ShooterSystem
         public float maxSpread = 10f;
         public float bulletSpeed = 10f;
         
-
-        void Update()
-        {
-            if (Mouse.current.leftButton.wasPressedThisFrame)
-            {
-                Fire();
-            }
-        }
         public override void Fire()
         {
             if (!bulletPrefab || !firePoint)
@@ -38,8 +30,8 @@ namespace Systems.ShooterSystem
                 GameObject bullet = Instantiate(bulletPrefab, firePoint.transform.position, spreadRotation);
 
                 // Make 'this' the parent of the bullet
-                bullet.transform.SetParent(firePoint.transform);
-
+                bullet.layer = gameObject.layer;
+                
                 // Apply velocity if the bullet has a Rigidbody
                 bullet.TryGetComponent<Rigidbody2D>(out var rb);
                 if (rb)

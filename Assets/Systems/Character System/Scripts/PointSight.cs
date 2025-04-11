@@ -13,7 +13,7 @@ public class PointSight : MonoBehaviour
 
     [Tooltip("If true, MainDirection will always point towards the cursor.")]
     public bool followCursor = false;
-
+    public bool debugMode = false;
     void Awake()
     {
         groundLayerMask = ~(1 << gameObject.layer);
@@ -68,20 +68,20 @@ public class PointSight : MonoBehaviour
         Vector3 origin = sightPoint.transform.position;
         RaycastHit2D hit = Physics2D.Raycast(origin, direction, RayLength, groundLayerMask);
 
-        Color rayColor = Color.green;
-
-        if (hit.collider)
+        if (debugMode)
         {
-            rayColor = Color.yellow;
-            Debug.Log("Hit: " + hit.collider.name);
-
-            if (hit.collider.gameObject.name == TargetTag) // Fixed comparison
+            Color rayColor = Color.green;
+        
+            if (hit.collider)
             {
-                rayColor = Color.red;
+                rayColor = Color.yellow;
+                if (hit.collider.gameObject.name == TargetTag) // Fixed comparison
+                {
+                    rayColor = Color.red;
+                }
             }
+            Debug.DrawRay(origin, direction * RayLength, rayColor);
         }
-
-        Debug.DrawRay(origin, direction * RayLength, rayColor);
     }
 
     private Vector2 AngleToDirection(float angleDegrees)
