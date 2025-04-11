@@ -7,13 +7,11 @@ public class SimpleAIBrain : MonoBehaviour
     [System.Serializable]
     public struct RayDetectionData
     {
-        public float length;
+        public float rayLength;
+        public float rayAngle;
         public Vector2 hitPosition;
         public GameObject hitObject;
-        public string tag;
-        public int layer;
-        public float angle;
-    }
+    } 
     public List<RayDetectionData> detectionTable = new List<RayDetectionData>();
 
     public class EvaluationResult
@@ -53,7 +51,7 @@ public class SimpleAIBrain : MonoBehaviour
     
     void Start()
     {
-        evaluationRoutine = StartCoroutine(EvaluateRoutine());
+        // evaluationRoutine = StartCoroutine(EvaluateRoutine());
     }
     
     // === Layer 1 Evaluation Methods ===
@@ -64,9 +62,9 @@ public class SimpleAIBrain : MonoBehaviour
 
         foreach (var ray in detectionTable)
         {
-            if (ray.hitObject == null)
+            if (!ray.hitObject)
                 score += 1f;
-            else if (ray.length > 1.5f)
+            else if (ray.rayLength > 1.5f)
                 score += 0.5f;
             else
                 score -= 1f;
@@ -81,13 +79,13 @@ public class SimpleAIBrain : MonoBehaviour
 
         foreach (var ray in detectionTable)
         {
-            if (ray.angle > -10f && ray.angle < 10f && ray.length < 1f && ray.hitObject)
+            if (ray.rayAngle > -10f && ray.rayAngle < 10f && ray.rayLength < 1f && ray.hitObject)
                 score += 2f;
 
-            if (ray.angle > 30f && ray.tag == "Platform")
+            if (ray.rayAngle > 30f && ray.hitObject.CompareTag("Platform"))
                 score += 1f;
 
-            if (ray.angle > 30f && ray.tag == "Enemy")
+            if (ray.rayAngle > 30f && ray.hitObject.CompareTag("Enemy"))
                 score += 1.5f;
         }
 
@@ -100,10 +98,10 @@ public class SimpleAIBrain : MonoBehaviour
 
         foreach (var ray in detectionTable)
         {
-            if (ray.tag == "Enemy")
+            if (ray.hitObject.CompareTag("Enemy"))
             {
-                float alignment = 1f - Mathf.Abs(ray.angle) / 45f;
-                float proximity = Mathf.Clamp(2f - ray.length, 0f, 2f);
+                float alignment = 1f - Mathf.Abs(ray.rayAngle) / 45f;
+                float proximity = Mathf.Clamp(2f - ray.rayLength, 0f, 2f);
                 score += alignment * proximity;
             }
         }
@@ -119,10 +117,10 @@ public class SimpleAIBrain : MonoBehaviour
 
         foreach (var ray in detectionTable)
         {
-            if (ray.angle > -10f && ray.angle < 10f && ray.length < 1f)
+            if (ray.rayAngle > -10f && ray.rayAngle < 10f && ray.rayLength < 1f)
                 forwardBlock += 1f;
 
-            if (Mathf.Abs(ray.angle) > 30f && ray.length > 2f)
+            if (Mathf.Abs(ray.rayAngle) > 30f && ray.rayLength > 2f)
                 sideOpen += 1f;
         }
 

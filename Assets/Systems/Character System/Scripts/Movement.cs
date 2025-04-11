@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(BoxCollider2D))]
 public class Movement : MonoBehaviour
@@ -6,6 +7,7 @@ public class Movement : MonoBehaviour
     public float moveSpeed = 5f;
     public float jumpForce = 8f;
     public float groundCheckDistance = 0.15f;
+    public bool readKeyboard = false;
 
     private Rigidbody2D rb;
     private BoxCollider2D boxCollider;
@@ -25,6 +27,7 @@ public class Movement : MonoBehaviour
     private void Update()
     {
         HandleHorizontalMovement();
+        if(readKeyboard) KeyboardInputs();
     }
 
     private void HandleHorizontalMovement()
@@ -34,6 +37,7 @@ public class Movement : MonoBehaviour
             transform.localScale = new Vector3(Mathf.Sign(moveDirection), 1f, 1f);
             transform.position += new Vector3(moveDirection * moveSpeed * Time.deltaTime, 0f, 0f);
         }
+        
     }
 
     public void MoveLeft()
@@ -61,6 +65,27 @@ public class Movement : MonoBehaviour
         if (hit.collider && hit.collider.gameObject != gameObject)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+        }
+    }
+    
+    void KeyboardInputs()
+    {
+        if (Keyboard.current.aKey.isPressed)
+        {
+            MoveLeft();
+        }
+        else if (Keyboard.current.dKey.isPressed)
+        {
+            MoveRight();
+        }
+        else
+        {
+            StopHorizontalMovement();
+        }
+
+        if (Keyboard.current.spaceKey.wasPressedThisFrame)
+        {
+            Jump();
         }
     }
 }
