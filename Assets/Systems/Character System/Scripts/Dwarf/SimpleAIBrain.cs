@@ -1,9 +1,9 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class SimpleAIBrain : MonoBehaviour
 {
-    // === Detection Table ===
     [System.Serializable]
     public struct RayDetectionData
     {
@@ -14,78 +14,87 @@ public class SimpleAIBrain : MonoBehaviour
         public int layer;
         public float angle;
     }
-
     public List<RayDetectionData> detectionTable = new List<RayDetectionData>();
 
-    // === Evaluation Table (Layer 1 Output) ===
     public class EvaluationResult
     {
         public string actionName;
-        public float score;
+        public float rawScore;
+        public float probability;
 
-        public EvaluationResult(string action, float value)
+        public EvaluationResult(string action, float score)
         {
             actionName = action;
-            score = value;
+            rawScore = score;
+            probability = 0f;
         }
     }
 
-    private List<EvaluationResult> evaluationTable = new List<EvaluationResult>();
+    private Dictionary<string, EvaluationResult> evaluationTable = new Dictionary<string, EvaluationResult>();
 
-    // === Threshold for Result Evaluation ===
-    public float resultThreshold = 1f;
+    [System.Serializable]
+    public class ActionActivations
+    {
+        public bool MoveForwardIsActive;
+        public bool JumpIsActive;
+        public bool FireIsActive;
+        public bool TurnIsActive;
+    }
+    
+    [Header("Action Activity Flags")]
+    public ActionActivations actionStates = new ActionActivations();
+    
+    [Range(0f, 1f)]
+    public float resultThreshold = 0.25f;
 
+    public float evaluationPeriod = 1f; // How often to evaluate in seconds
+    private Coroutine evaluationRoutine;
+
+    
+    void Start()
+    {
+        evaluationRoutine = StartCoroutine(EvaluateRoutine());
+    }
+    
     // === Layer 1 Evaluation Methods ===
 
-    public void EvaluateMoveForward()
+    private void EvaluateMoveForward()
     {
         float score = 0f;
 
         foreach (var ray in detectionTable)
         {
             if (ray.hitObject == null)
-            {
                 score += 1f;
-            }
             else if (ray.length > 1.5f)
-            {
                 score += 0.5f;
-            }
             else
-            {
                 score -= 1f;
-            }
         }
 
-        evaluationTable.Add(new EvaluationResult("MoveForward", score));
+        evaluationTable["MoveForward"] = new EvaluationResult("MoveForward", Mathf.Max(0, score));
     }
 
-    public void EvaluateJump()
+    private void EvaluateJump() // creates a score based on the detection table data and saves the score to evaluation table with the action name
     {
         float score = 0f;
 
         foreach (var ray in detectionTable)
         {
-            if (ray.angle > -10f && ray.angle < 10f && ray.length < 1f && ray.hitObject != null)
-            {
+            if (ray.angle > -10f && ray.angle < 10f && ray.length < 1f && ray.hitObject)
                 score += 2f;
-            }
 
             if (ray.angle > 30f && ray.tag == "Platform")
-            {
                 score += 1f;
-            }
 
             if (ray.angle > 30f && ray.tag == "Enemy")
-            {
                 score += 1.5f;
-            }
         }
 
-        evaluationTable.Add(new EvaluationResult("Jump", score));
+        evaluationTable["Jump"] = new EvaluationResult("Jump", Mathf.Max(0, score));
     }
 
-    public void EvaluateFire()
+    private void EvaluateFire()
     {
         float score = 0f;
 
@@ -99,10 +108,10 @@ public class SimpleAIBrain : MonoBehaviour
             }
         }
 
-        evaluationTable.Add(new EvaluationResult("Fire", score));
+        evaluationTable["Fire"] = new EvaluationResult("Fire", Mathf.Max(0, score));
     }
 
-    public void EvaluateTurn()
+    private void EvaluateTurn()
     {
         float score = 0f;
         float forwardBlock = 0f;
@@ -111,30 +120,39 @@ public class SimpleAIBrain : MonoBehaviour
         foreach (var ray in detectionTable)
         {
             if (ray.angle > -10f && ray.angle < 10f && ray.length < 1f)
-            {
                 forwardBlock += 1f;
-            }
 
             if (Mathf.Abs(ray.angle) > 30f && ray.length > 2f)
-            {
                 sideOpen += 1f;
-            }
         }
 
         score = forwardBlock + sideOpen;
 
-        evaluationTable.Add(new EvaluationResult("Turn", score));
+        evaluationTable["Turn"] = new EvaluationResult("Turn", Mathf.Max(0, score));
     }
 
-    // === Result Method (Layer 3) ===
-    // Returns the string component of the elements in evaluation table with score >= treshold  
+    // compares every action's score to the sum of all scores in the evaluation Table:   (individual score probability) = (individual action score) / (total score)
+    // SUMMARY: Turns the evaluation scores into probabilities 
+    private void NormalizeScoresToProbabilities()
+    {
+        float total = 0f;
+        foreach (var eval in evaluationTable.Values)
+            total += eval.rawScore;
+
+        if (total <= 0f) total = 1f;
+
+        foreach (var eval in evaluationTable.Values)
+            eval.probability = eval.rawScore / total;
+    }
+
+    // returns those that pass the threshold 
     public List<string> GetDecisions(float threshold)
     {
         List<string> decisions = new List<string>();
 
-        foreach (var eval in evaluationTable)
+        foreach (var eval in evaluationTable.Values)
         {
-            if (eval.score >= threshold)
+            if (eval.probability >= threshold)
             {
                 decisions.Add(eval.actionName);
             }
@@ -143,16 +161,42 @@ public class SimpleAIBrain : MonoBehaviour
         return decisions;
     }
 
-    // === Public Entry Point ===
+    private IEnumerator EvaluateRoutine()
+    {
+        List<string> aiResults;
+        while (true)
+        {
+            aiResults = RunAI(); // Perform evaluation
+         
+            string log = "AI Decisions: ";
+            foreach (var action in aiResults)
+            {
+                if (evaluationTable.TryGetValue(action, out var result))
+                {
+                    log += $"{action} ({result.probability:F2})  ";
+                }
+            }
+
+            Debug.Log(log);
+
+
+            yield return new WaitForSeconds(evaluationPeriod); 
+        }
+    }
     public List<string> RunAI()
     {
-        evaluationTable.Clear(); // Reset evaluation results
+        evaluationTable.Clear();
+        
+        if(actionStates.MoveForwardIsActive) EvaluateMoveForward();
+        if(actionStates.JumpIsActive)EvaluateJump();
+        if(actionStates.FireIsActive)EvaluateFire();
+        if(actionStates.TurnIsActive)EvaluateTurn();
 
-        EvaluateMoveForward();
-        EvaluateJump();
-        EvaluateFire();
-        EvaluateTurn();
+        NormalizeScoresToProbabilities();
 
         return GetDecisions(resultThreshold);
     }
+    
 }
+
+

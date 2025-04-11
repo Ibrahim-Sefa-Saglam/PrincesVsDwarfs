@@ -4,9 +4,11 @@ using UnityEngine.InputSystem;
 public class DwarfBehavior : MonoBehaviour
 {
     public GameObject gunObject;
+    public SimpleAIBrain brain;
     
     private BaseGun gunScript;
     private Movement MovementScript;
+    
     
     void Start()
     {
@@ -20,8 +22,11 @@ public class DwarfBehavior : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        KeyboardInputs();
-        MouseInputs();
+        // KeyboardInputs();
+        // MouseInputs();
+        
+        
+        
     }
 
     void KeyboardInputs()
